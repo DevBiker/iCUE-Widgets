@@ -1,0 +1,19 @@
+{
+  "author": "DevBiker",
+  "id": "com.devbiker.sensorgraphplus",
+  "name": "Sensor Graph Plus",
+  "description": "Highly customizable graph widget for up to three sensors, with a secondary axis for multiple sensor ranges and sensor statistics.",
+  "version": "1.0.0",
+  "preview_icon": "resources/sensorgraphplus.svg",
+  "min_framework_version": "1.0.0",
+  "os": [
+    { "platform": "windows" }
+  ],
+  "supported_devices": [
+    { "type": "dashboard_lcd", "features": ["sensor-screen"] }
+  ],
+  "required_plugins": [
+    "widgetbuilder.sensorsdataprovider:Sensors:1.0"
+  ],
+  "interactive": false
+}

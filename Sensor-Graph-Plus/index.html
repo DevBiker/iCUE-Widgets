@@ -1,0 +1,1397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tr('Sensor Graph Plus')</title>
+
+  <link rel="icon" type="image/svg+xml" href="resources/sensorgraphplus.svg">
+
+  <meta name="x-icue-restrictions"
+        data-restrictions='[
+          { "device": "dashboard_lcd" }
+        ]'>
+
+  <!-- Sensor A: plotted against the left axis -->
+  <meta name="x-icue-property" content="sensorA" data-label="tr('Sensor A')" data-type="sensors-combobox" data-default="plugins.Sensorsdataprovider.getDefaultSensorIdBlock('temperature')">
+  <meta name="x-icue-property" content="sensorALabel" data-label="tr('Sensor A Label')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorAAxisMin" data-label="tr('Sensor A Min')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorAAxisMax" data-label="tr('Sensor A Max')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorAColor" data-label="tr('Sensor A Color')" data-type="color" data-default="'#4DA3FF'">
+
+  <!-- Sensor B: optional, plotted against the right axis -->
+  <meta name="x-icue-property" content="showSensorB" data-label="tr('Show Sensor B')" data-type="switch" data-default="false">
+  <meta name="x-icue-property" content="sensorB" data-label="tr('Sensor B')" data-type="sensors-combobox" data-default="plugins.Sensorsdataprovider.getDefaultSensorIdBlock('load')">
+  <meta name="x-icue-property" content="sensorBLabel" data-label="tr('Sensor B Label')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorBAxisMin" data-label="tr('Sensor B Min')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorBAxisMax" data-label="tr('Sensor B Max')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorBColor" data-label="tr('Sensor B Color')" data-type="color" data-default="'#FF6B6B'">
+
+  <!-- Sensor C: optional, shares the legend row with A/B; plots on whichever existing axis the user picks -->
+  <meta name="x-icue-property" content="showSensorC" data-label="tr('Show Sensor C')" data-type="switch" data-default="false">
+  <meta name="x-icue-property" content="sensorC" data-label="tr('Sensor C')" data-type="sensors-combobox" data-default="plugins.Sensorsdataprovider.getDefaultSensorIdBlock('fan')">
+  <meta name="x-icue-property" content="sensorCLabel" data-label="tr('Sensor C Label')" data-type="textfield" data-default="''">
+  <meta name="x-icue-property" content="sensorCUseSecondaryAxis" data-label="tr('Sensor C on Secondary Axis')" data-type="switch" data-default="false">
+  <meta name="x-icue-property" content="sensorCColor" data-label="tr('Sensor C Color')" data-type="color" data-default="'#FFD166'">
+
+
+
+  <meta name="x-icue-property" content="chartWindowMinutes" data-label="tr('Chart Window')" data-type="slider" data-min="1" data-max="30" data-step="1" data-default="5" data-unit-label="'min'">
+  <meta name="x-icue-property" content="statsWindowMinutes" data-label="tr('Statistics Window')" data-type="slider" data-min="1" data-max="30" data-step="1" data-default="5" data-unit-label="'min'">
+
+  <!-- Widget Personalization -->
+  <meta name="x-icue-property" content="textColor" data-label="tr('Text Color')" data-type="color" data-default="'#FFFFFF'">
+  <meta name="x-icue-property" content="accentColor" data-label="tr('Accent Color')" data-type="color" data-default="'#76B900'">
+  <meta name="x-icue-property" content="backgroundColor" data-label="tr('Background Color')" data-type="color" data-default="'#111111'">
+  <meta name="x-icue-property" content="backgroundMedia"
+        data-label="tr('Background Image')"
+        data-type="media-selector"
+        data-filters="['*.png','*.jpg','*.jpeg','*.webp']">
+  <meta name="x-icue-property" content="bgBrightness" data-label="tr('Background Brightness')" data-type="slider" data-default="100" data-min="10" data-max="150" data-step="5">
+  <meta name="x-icue-property" content="glassBlur" data-label="tr('Glass Blur')" data-type="slider" data-default="0" data-min="0" data-max="30" data-step="1">
+  <meta name="x-icue-property" content="transparency" data-label="tr('Background Transparency')" data-type="slider" data-default="100" data-min="0" data-max="100" data-step="1">
+
+  <script type="application/json" id="x-icue-groups">
+    [
+      {
+        "title": "tr('Widget Setup')",
+        "properties": [
+          "sensorA",
+          "sensorALabel",
+          "sensorAAxisMin",
+          "sensorAAxisMax",
+          "sensorAColor",
+          "showSensorB",
+          "sensorB",
+          "sensorBLabel",
+          "sensorBAxisMin",
+          "sensorBAxisMax",
+          "sensorBColor",
+          "showSensorC",
+          "sensorC",
+          "sensorCLabel",
+          "sensorCUseSecondaryAxis",
+          "sensorCColor",
+          "chartWindowMinutes",
+          "statsWindowMinutes"
+        ]
+      },
+      {
+        "title": "tr('Widget Personalization')",
+        "properties": [
+          "textColor",
+          "accentColor",
+          "backgroundColor",
+          "backgroundMedia",
+          "bgBrightness",
+          "glassBlur",
+          "transparency"
+        ]
+      }
+    ]
+  </script>
+
+  <link rel="stylesheet" href="styles/sensorgraphplus.css">
+  <!-- MediaViewer CSS (inlined for packaging) -->
+  <style>
+    .position-container { position: absolute; transform-origin: top left; }
+    .scale-container { transform-origin: top left; }
+    .rotation-container { transform-origin: center center; }
+    .rotation-container img, .rotation-container video { display: block; object-fit: contain; }
+  </style>
+  <!-- MediaViewer JS (inlined for packaging) -->
+  <script>
+    class MediaViewer {
+      constructor(options = {}) {
+        this.container = options.container;
+        this.onMediaLoaded = options.onMediaLoaded || (() => {});
+        this.onMediaError = options.onMediaError || (() => {});
+        this.debug = options.debug || false;
+        this.positionContainer = null;
+        this.scaleContainer = null;
+        this.rotationContainer = null;
+        this.mediaElement = null;
+        this.currentMediaPath = null;
+        this.supportedImageFormats = ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico"];
+        this.supportedVideoFormats = ["mp4", "webm", "ogg", "mov", "avi", "mkv"];
+        if (!this.container) {
+          throw new Error("MediaViewer: container is required");
+        }
+      }
+
+      getFileExtension(filePath) { return filePath.split(".").pop().toLowerCase(); }
+      isImageFile(ext) { return this.supportedImageFormats.includes(ext); }
+      isVideoFile(ext) { return this.supportedVideoFormats.includes(ext); }
+      log(...args) { if (this.debug) console.log("[MediaViewer]", ...args); }
+      warn(...args) { if (this.debug) console.warn("[MediaViewer]", ...args); }
+      error(...args) { console.error("[MediaViewer]", ...args); }
+
+      createImageElement(filePath) {
+        const img = document.createElement("img");
+        img.src = filePath;
+        img.onerror = () => {
+          this.error("Failed to load image:", filePath);
+          this.onMediaError(new Error("Failed to load image: " + filePath));
+        };
+        img.onload = () => {
+          this.log("Image loaded:", filePath);
+          this.onMediaLoaded(img);
+        };
+        return img;
+      }
+
+      createVideoElement(filePath) {
+        const video = document.createElement("video");
+        video.controls = false;
+        video.autoplay = true;
+        video.loop = true;
+        video.muted = true;
+        video.playsInline = true;
+        video.addEventListener("loadedmetadata", () => {
+          this.log("Video metadata loaded:", filePath);
+        });
+        video.addEventListener("loadeddata", () => {
+          video.play().then(() => {
+            this.log("Video playing");
+            this.onMediaLoaded(video);
+          }).catch((e) => {
+            this.error("Error playing video:", e);
+            this.onMediaError(e);
+          });
+        });
+        video.addEventListener("error", (e) => {
+          this.error("Video error:", e);
+          this.onMediaError(new Error("Video error: " + (video.error?.message || "Unknown error")));
+        });
+        video.src = filePath;
+        return video;
+      }
+
+      createMediaElement(filePath) {
+        const ext = this.getFileExtension(filePath);
+        if (this.isImageFile(ext)) return this.createImageElement(filePath);
+        if (this.isVideoFile(ext)) return this.createVideoElement(filePath);
+        this.error("Unsupported media format:", ext);
+        this.onMediaError(new Error("Unsupported media format: " + ext));
+        return null;
+      }
+
+      createContainers() {
+        this.positionContainer = document.createElement("div");
+        this.positionContainer.className = "position-container";
+        this.scaleContainer = document.createElement("div");
+        this.scaleContainer.className = "scale-container";
+        this.rotationContainer = document.createElement("div");
+        this.rotationContainer.className = "rotation-container";
+        this.rotationContainer.appendChild(this.mediaElement);
+        this.scaleContainer.appendChild(this.rotationContainer);
+        this.positionContainer.appendChild(this.scaleContainer);
+        return this.positionContainer;
+      }
+
+      applyTransform(params = {}) {
+        if (!this.positionContainer || !this.scaleContainer || !this.rotationContainer) {
+          this.warn("Containers not initialized");
+          return;
+        }
+        const baseWidth = params.baseWidth || 100;
+        const baseHeight = params.baseHeight || 100;
+        const scaleValue = params.scale !== undefined ? params.scale : 1;
+        const posX = params.positionX || 0;
+        const posY = params.positionY || 0;
+        const rotation = params.angle || 0;
+        const containerWidth = this.container.clientWidth;
+        const containerHeight = this.container.clientHeight;
+        const scaleX = containerWidth / baseWidth;
+        const scaleY = containerHeight / baseHeight;
+        const minScale = Math.min(scaleX, scaleY);
+        this.positionContainer.style.transform = "translate(" + (posX * minScale) + "px, " + (posY * minScale) + "px)";
+        this.scaleContainer.style.transform = "scale(" + (scaleValue * minScale) + ")";
+        this.rotationContainer.style.transform = "rotate(" + rotation + "deg)";
+      }
+
+      loadMedia(params = {}) {
+        const filePath = params.path;
+        if (!filePath) {
+          this.clear();
+          return;
+        }
+        const decoded = decodeURIComponent(filePath);
+        if (this.currentMediaPath === decoded) {
+          this.applyTransform(params);
+          return;
+        }
+        this.clear();
+        this.mediaElement = this.createMediaElement(decoded);
+        if (!this.mediaElement) {
+          this.error("Failed to create media element");
+          return;
+        }
+        const containers = this.createContainers();
+        this.container.appendChild(containers);
+        this.container.style.visibility = "visible";
+        this.applyTransform(params);
+        this.currentMediaPath = decoded;
+      }
+
+      clear() {
+        this.container.innerHTML = "";
+        this.container.style.visibility = "hidden";
+        this.positionContainer = null;
+        this.scaleContainer = null;
+        this.rotationContainer = null;
+        this.mediaElement = null;
+        this.currentMediaPath = null;
+      }
+
+      destroy() {
+        this.clear();
+        this.container = null;
+        this.onMediaLoaded = null;
+        this.onMediaError = null;
+      }
+    }
+  </script>
+  <script>
+    // Inline wrappers keep packaged widgets independent of optional ../common files.
+    if (typeof window.IcueWidgetApiWrapper !== "function") {
+      window.IcueWidgetApiWrapper = class IcueWidgetApiWrapper {
+        constructor(plugin, timeoutMs = 5000) {
+          this.plugin = plugin;
+          this.timeoutMs = timeoutMs;
+          this.pendingRequests = new Map();
+          this.nextRequestId = 0;
+
+          if (this.plugin && this.plugin.asyncResponse) {
+            this.plugin.asyncResponse.connect(this._handleAsyncResponse.bind(this));
+          }
+        }
+
+        _nextRequestId() {
+          return this.nextRequestId++;
+        }
+
+        _handleAsyncResponse(requestId, value) {
+          const pending = this.pendingRequests.get(requestId);
+          if (!pending) return;
+
+          clearTimeout(pending.timeoutId);
+          pending.resolve(value);
+          this.pendingRequests.delete(requestId);
+        }
+
+        request(method, ...args) {
+          return new Promise((resolve, reject) => {
+            if (typeof method !== "function") {
+              reject(new Error("Plugin method unavailable"));
+              return;
+            }
+
+            const requestId = this._nextRequestId();
+            const timeoutId = setTimeout(() => {
+              if (!this.pendingRequests.has(requestId)) return;
+
+              this.pendingRequests.delete(requestId);
+              reject(new Error("Request timeout"));
+            }, this.timeoutMs);
+
+            this.pendingRequests.set(requestId, { resolve, reject, timeoutId });
+
+            try {
+              method.call(this.plugin, requestId, ...args);
+            } catch (error) {
+              clearTimeout(timeoutId);
+              this.pendingRequests.delete(requestId);
+              reject(error);
+            }
+          });
+        }
+      };
+    }
+
+    if (typeof window.SimpleSensorApiWrapper !== "function") {
+      window.SimpleSensorApiWrapper = class SimpleSensorApiWrapper extends window.IcueWidgetApiWrapper {
+        constructor(plugin, timeoutMs = 5000) {
+          super(plugin, timeoutMs);
+        }
+
+        getSensorValue(sensorId) { return this.request(this.plugin.getSensorValue, sensorId); }
+        getSensorUnits(sensorId) { return this.request(this.plugin.getSensorUnits, sensorId); }
+        getSensorName(sensorId) { return this.request(this.plugin.getSensorName, sensorId); }
+        getSensorDeviceName(sensorId) { return this.request(this.plugin.getSensorDeviceName, sensorId); }
+        getSensorType(sensorId) { return this.request(this.plugin.getSensorType, sensorId); }
+        getSensorKind(sensorId) { return this.request(this.plugin.getSensorKind, sensorId); }
+        getAllSensorIds() { return this.request(this.plugin.getAllSensorIds); }
+        sensorIsConnected(sensorId) { return this.request(this.plugin.sensorIsConnected, sensorId); }
+      };
+    }
+  </script>
+  <!-- Rolling-window analytics engine -->
+  <script>
+    const HISTORY_SAMPLE_MIN_INTERVAL_MS = 250;
+
+    // Trend/rate detection uses its own fixed 1-minute window, independent of
+    // the chart and statistics windows (same logic as the Smart Sensors
+    // widget) - a trend window tied to a long user window is much too slow
+    // to react to real changes.
+    const TREND_WINDOW_MS = 60 * 1000;
+
+    // One full-resolution buffer per sensor slot. The chart window, the
+    // statistics (avg/min/max) window, and the fixed trend window are each
+    // just a slice of this same buffer - they can be different lengths
+    // (stats could span longer or shorter than what's plotted) without
+    // needing separate throttled buffers, since only two series ever exist
+    // in this widget.
+    class SensorHistory {
+      constructor() {
+        this.samples = [];
+        this.lastSampleAt = 0;
+        this.lastRawValue = null;
+        this.lastRawAt = 0;
+        this.units = "";
+        this.retainMs = TREND_WINDOW_MS;
+      }
+
+      setRetainMs(ms) {
+        if (Number.isFinite(ms) && ms > this.retainMs) this.retainMs = ms;
+      }
+
+      setUnits(units) {
+        if (units) this.units = units;
+      }
+
+      recordRaw(value, ts) {
+        const n = Number(value);
+        if (!Number.isFinite(n)) return;
+        this.lastRawValue = n;
+        this.lastRawAt = ts;
+        if (ts - this.lastSampleAt >= HISTORY_SAMPLE_MIN_INTERVAL_MS) {
+          this.samples.push({ t: ts, v: n });
+          this.lastSampleAt = ts;
+          this._prune(ts);
+        }
+      }
+
+      _prune(now) {
+        const cutoff = now - this.retainMs;
+        let start = 0;
+        while (start < this.samples.length && this.samples[start].t < cutoff) start++;
+        if (start > 0) this.samples.splice(0, start);
+      }
+
+      _slice(now, windowMs) {
+        this._prune(now);
+        const cutoff = now - windowMs;
+        const out = [];
+        for (let i = 0; i < this.samples.length; i++) {
+          if (this.samples[i].t >= cutoff) out.push(this.samples[i]);
+        }
+        return out;
+      }
+
+      getStats(now, windowMs) {
+        if (this.lastRawValue === null) {
+          return { current: null, avg: null, min: null, max: null, sampleCount: 0 };
+        }
+        const pts = this._slice(now, windowMs);
+        if (pts.length === 0) {
+          return { current: this.lastRawValue, avg: this.lastRawValue, min: this.lastRawValue, max: this.lastRawValue, sampleCount: 0 };
+        }
+        let sum = 0, min = Infinity, max = -Infinity;
+        for (let i = 0; i < pts.length; i++) {
+          const v = pts[i].v;
+          sum += v;
+          if (v < min) min = v;
+          if (v > max) max = v;
+        }
+        return { current: this.lastRawValue, avg: sum / pts.length, min, max, sampleCount: pts.length };
+      }
+
+      // Weighted linear regression of value vs. time over the fixed 1-minute
+      // trend window - identical approach to the Smart Sensors widget. Each
+      // sample's weight ramps from 0.15 (oldest) to 1.0 (newest) so a recent
+      // shift dominates the slope quickly rather than being diluted by a
+      // flat average over the whole minute.
+      computeTrend(now) {
+        const pts = this._slice(now, TREND_WINDOW_MS);
+        const n = pts.length;
+        if (n < 4) return { trend: "stable", ratePerMin: null };
+
+        const windowStart = now - TREND_WINDOW_MS;
+        let sumW = 0, sumWX = 0, sumWY = 0, sumWXY = 0, sumWX2 = 0;
+        let min = Infinity, max = -Infinity;
+
+        for (let i = 0; i < n; i++) {
+          const p = pts[i];
+          const xSec = (p.t - windowStart) / 1000;
+          const recencyFrac = Math.max(0, Math.min(1, (p.t - windowStart) / TREND_WINDOW_MS));
+          const w = 0.15 + 0.85 * recencyFrac;
+          sumW += w;
+          sumWX += w * xSec;
+          sumWY += w * p.v;
+          sumWXY += w * xSec * p.v;
+          sumWX2 += w * xSec * xSec;
+          if (p.v < min) min = p.v;
+          if (p.v > max) max = p.v;
+        }
+
+        const denom = sumW * sumWX2 - sumWX * sumWX;
+        const slopePerSec = Math.abs(denom) > 1e-9 ? (sumW * sumWXY - sumWX * sumWY) / denom : 0;
+        const ratePerMin = slopePerSec * 60;
+
+        let trend = "stable";
+        const range = max - min;
+        if (range > 0) {
+          const threshold = range * 0.08;
+          if (ratePerMin > threshold) trend = "rising";
+          else if (ratePerMin < -threshold) trend = "falling";
+        }
+
+        return { trend, ratePerMin };
+      }
+
+      // Normalizes samples against an explicit [lo, hi] axis range (not the
+      // series' own observed min/max) so two sensors can share one chart with
+      // independent, user-configurable scales. Out-of-range values clamp to
+      // the chart edge rather than breaking the line.
+      getPointsForRange(now, windowMs, lo, hi, w, h) {
+        const pts = this._slice(now, windowMs);
+        if (pts.length < 2) return null;
+
+        const span = (hi - lo) || 1;
+        const start = now - windowMs;
+        const out = new Array(pts.length);
+        for (let i = 0; i < pts.length; i++) {
+          const s = pts[i];
+          const x = Math.max(0, Math.min(w, ((s.t - start) / windowMs) * w));
+          const yRaw = h - ((s.v - lo) / span) * h;
+          const y = Math.max(0, Math.min(h, yRaw));
+          out[i] = x.toFixed(1) + "," + y.toFixed(1);
+        }
+        return out.join(" ");
+      }
+
+      valueToY(value, lo, hi, h) {
+        const span = (hi - lo) || 1;
+        return Math.max(0, Math.min(h, h - ((value - lo) / span) * h));
+      }
+    }
+  </script>
+</head>
+
+<body>
+  <div id="root" class="widget-root">
+    <!-- Background stack: overall opacity via --bg-opacity; image overrides color when present -->
+    <div class="widget-background" aria-hidden="true">
+      <div class="main-glass"></div>
+      <div id="media-background"></div>
+    </div>
+
+    <div class="content">
+      <div class="graph-card">
+        <div class="legend" id="legend">
+          <div class="legend-item legend-a" data-connected="true">
+            <div class="legend-name-row">
+              <span class="legend-swatch" id="legend-a-swatch"></span>
+              <span class="legend-name" id="legend-a-name">Sensor A</span>
+            </div>
+            <div class="legend-main">
+              <span class="legend-value" id="legend-a-value">—<span class="legend-unit" id="legend-a-unit"></span></span>
+              <span class="legend-minmax">
+                <span class="legend-max" id="legend-a-max"></span>
+                <span class="legend-min" id="legend-a-min"></span>
+              </span>
+            </div>
+            <div class="legend-avgrow">
+              <span class="legend-avg" id="legend-a-avg"></span>
+              <span class="legend-rate" id="legend-a-rate"></span>
+              <span class="legend-trend" id="legend-a-trend"></span>
+            </div>
+          </div>
+          <div class="legend-item legend-c hidden" id="legend-c" data-connected="true">
+            <div class="legend-name-row">
+              <span class="legend-swatch" id="legend-c-swatch"></span>
+              <span class="legend-name" id="legend-c-name">Sensor C</span>
+            </div>
+            <div class="legend-main">
+              <span class="legend-value" id="legend-c-value">—<span class="legend-unit" id="legend-c-unit"></span></span>
+              <span class="legend-minmax">
+                <span class="legend-max" id="legend-c-max"></span>
+                <span class="legend-min" id="legend-c-min"></span>
+              </span>
+            </div>
+            <div class="legend-avgrow">
+              <span class="legend-avg" id="legend-c-avg"></span>
+              <span class="legend-rate" id="legend-c-rate"></span>
+              <span class="legend-trend" id="legend-c-trend"></span>
+            </div>
+          </div>
+          <div class="legend-item legend-b" data-connected="true">
+            <div class="legend-name-row">
+              <span class="legend-name" id="legend-b-name">Sensor B</span>
+              <span class="legend-swatch" id="legend-b-swatch"></span>
+            </div>
+            <div class="legend-main">
+              <span class="legend-value" id="legend-b-value">—<span class="legend-unit" id="legend-b-unit"></span></span>
+              <span class="legend-minmax">
+                <span class="legend-max" id="legend-b-max"></span>
+                <span class="legend-min" id="legend-b-min"></span>
+              </span>
+            </div>
+            <div class="legend-avgrow">
+              <span class="legend-avg" id="legend-b-avg"></span>
+              <span class="legend-rate" id="legend-b-rate"></span>
+              <span class="legend-trend" id="legend-b-trend"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="graph-plot" id="graph-plot">
+          <div class="axis-label axis-label-a-max" id="axis-a-max"></div>
+          <div class="axis-label axis-label-a-min" id="axis-a-min"></div>
+          <div class="axis-label axis-label-b-max" id="axis-b-max"></div>
+          <div class="axis-label axis-label-b-min" id="axis-b-min"></div>
+
+          <svg class="graph-svg" id="graph-svg" viewBox="0 0 100 40" preserveAspectRatio="none">
+            <polyline class="graph-avg-line" id="avg-line-a" points=""></polyline>
+            <polyline class="graph-avg-line" id="avg-line-b" points=""></polyline>
+            <polyline class="graph-avg-line" id="avg-line-c" points=""></polyline>
+            <polyline class="graph-line" id="line-a" points=""></polyline>
+            <polyline class="graph-line" id="line-b" points=""></polyline>
+            <polyline class="graph-line" id="line-c" points=""></polyline>
+          </svg>
+        </div>
+
+        <div class="window-label" id="window-label"></div>
+      </div>
+
+      <div id="state" class="hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    const VALUE_PLACEHOLDER = "—";
+    const CHART_W = 100;
+    const CHART_H = 40;
+
+    icueEvents = {
+      "onDataUpdated": onIcueDataUpdated,
+      "onICUEInitialized": onIcueInitialized
+    };
+
+    pluginSensorsdataproviderEvents = { "onInitialized": onSensorPluginReady };
+
+    const elRoot = document.getElementById("root");
+    const elState = document.getElementById("state");
+    const mediaMount = document.getElementById("media-background");
+    const elLegend = document.getElementById("legend");
+    const elLegendC = document.getElementById("legend-c");
+    const elGraphPlot = document.getElementById("graph-plot");
+    const elWindowLabel = document.getElementById("window-label");
+
+    const el = {
+      A: {
+        legendItem: document.querySelector(".legend-item.legend-a"),
+        swatch: document.getElementById("legend-a-swatch"),
+        name: document.getElementById("legend-a-name"),
+        value: document.getElementById("legend-a-value"),
+        unit: document.getElementById("legend-a-unit"),
+        max: document.getElementById("legend-a-max"),
+        min: document.getElementById("legend-a-min"),
+        avg: document.getElementById("legend-a-avg"),
+        rate: document.getElementById("legend-a-rate"),
+        trend: document.getElementById("legend-a-trend"),
+        axisMax: document.getElementById("axis-a-max"),
+        axisMin: document.getElementById("axis-a-min"),
+        line: document.getElementById("line-a"),
+        avgLine: document.getElementById("avg-line-a")
+      },
+      B: {
+        legendItem: document.querySelector(".legend-item.legend-b"),
+        swatch: document.getElementById("legend-b-swatch"),
+        name: document.getElementById("legend-b-name"),
+        value: document.getElementById("legend-b-value"),
+        unit: document.getElementById("legend-b-unit"),
+        max: document.getElementById("legend-b-max"),
+        min: document.getElementById("legend-b-min"),
+        avg: document.getElementById("legend-b-avg"),
+        rate: document.getElementById("legend-b-rate"),
+        trend: document.getElementById("legend-b-trend"),
+        axisMax: document.getElementById("axis-b-max"),
+        axisMin: document.getElementById("axis-b-min"),
+        line: document.getElementById("line-b"),
+        avgLine: document.getElementById("avg-line-b")
+      },
+      C: {
+        legendItem: document.getElementById("legend-c"),
+        swatch: document.getElementById("legend-c-swatch"),
+        name: document.getElementById("legend-c-name"),
+        value: document.getElementById("legend-c-value"),
+        unit: document.getElementById("legend-c-unit"),
+        max: document.getElementById("legend-c-max"),
+        min: document.getElementById("legend-c-min"),
+        avg: document.getElementById("legend-c-avg"),
+        rate: document.getElementById("legend-c-rate"),
+        trend: document.getElementById("legend-c-trend"),
+        line: document.getElementById("line-c"),
+        avgLine: document.getElementById("avg-line-c")
+      }
+    };
+
+    const TREND_GLYPH = { rising: "▲", falling: "▼", stable: "▬" };
+    const TREND_COLOR = { rising: "#5FD068", falling: "#FF6B6B", stable: "rgba(255,255,255,0.55)" };
+
+    let pendingFrame = null;
+    let pendingStyleRefresh = true;
+    let lastStyleSignature = "";
+    let lastMediaSignature = "";
+    let currentChartWindowMs = 5 * 60 * 1000;
+    let currentStatsWindowMs = 5 * 60 * 1000;
+    let pluginReady = false;
+    let sensorApi = null;
+
+    function getEmptyIdentity() {
+      return { type: "", kind: "", name: "", deviceName: "", connected: true };
+    }
+
+    function getMaxRetainMs() {
+      return Math.max(currentChartWindowMs, currentStatsWindowMs, TREND_WINDOW_MS);
+    }
+
+    function createHistory() {
+      const history = new SensorHistory();
+      history.setRetainMs(getMaxRetainMs());
+      return history;
+    }
+
+    const slots = {
+      A: { sensorId: "", history: createHistory(), identity: getEmptyIdentity() },
+      B: { sensorId: "", history: createHistory(), identity: getEmptyIdentity() },
+      C: { sensorId: "", history: createHistory(), identity: getEmptyIdentity() }
+    };
+
+    const pendingUnitsRefresh = Object.create(null);
+    const lastUnitsRefreshAt = Object.create(null);
+    const pendingIdentityRefresh = Object.create(null);
+    const lastIdentityRefreshAt = Object.create(null);
+
+    const mediaBackgroundComponent = createMediaBackgroundComponent(mediaMount);
+
+    function createMediaBackgroundComponent(container) {
+      if (!container) {
+        return { clear: function() {}, loadMedia: function() {} };
+      }
+
+      if (typeof MediaViewer === "function") {
+        const viewer = new MediaViewer({
+          container: container,
+          onMediaLoaded: function() { container.classList.add("has-media"); },
+          onMediaError: function(error) {
+            container.classList.remove("has-media");
+            console.error("Media background error:", error);
+          }
+        });
+        return {
+          clear: function() { viewer.clear(); container.classList.remove("has-media"); },
+          loadMedia: function(config) { viewer.loadMedia(config); }
+        };
+      }
+
+      console.warn("MediaViewer unavailable; using static background fallback.");
+      return {
+        clear: function() {
+          container.style.backgroundImage = "";
+          container.classList.remove("has-media");
+        },
+        loadMedia: function(config) {
+          const assetPath = config ? (config.pathToAsset || config.path || "") : "";
+          if (!assetPath) {
+            container.style.backgroundImage = "";
+            container.classList.remove("has-media");
+            return;
+          }
+          container.style.backgroundImage = "url('" + escapeCssUrl(assetPath) + "')";
+          container.style.backgroundRepeat = "no-repeat";
+          container.style.backgroundPosition = "center";
+          container.style.backgroundSize = "cover";
+          container.classList.add("has-media");
+        }
+      };
+    }
+
+    // --- Helpers ---
+
+    function getIcueProperty(name) {
+      if (typeof window !== "undefined" && Object.prototype.hasOwnProperty.call(window, name)) {
+        const value = window[name];
+        if (value !== undefined && value !== null && value !== "") return value;
+      }
+      try {
+        const value = Function("return typeof " + name + " !== 'undefined' ? " + name + " : undefined")();
+        if (value !== undefined && value !== null && value !== "") return value;
+      } catch (e) {}
+      return undefined;
+    }
+
+    function resolveMediaPath(value) {
+      if (!value) return "";
+      if (typeof value === "string") return value;
+      if (value.pathToAsset) return value.pathToAsset;
+      if (value.path) return value.path;
+      return "";
+    }
+
+    function escapeCssUrl(value) {
+      return String(value || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+    }
+
+    function normalizeMediaConfig(value) {
+      if (!value) return null;
+      if (typeof value === "string") {
+        const path = value.trim();
+        return path ? { path: path, pathToAsset: path } : null;
+      }
+      if (typeof value !== "object") return null;
+      const path = resolveMediaPath(value);
+      if (!path) return null;
+      return {
+        path: path, pathToAsset: path,
+        baseWidth: value.baseWidth ?? value.baseSizeX, baseHeight: value.baseHeight ?? value.baseSizeY,
+        scale: value.scale, positionX: value.positionX, positionY: value.positionY, angle: value.angle
+      };
+    }
+
+    function clampNumber(n, min, max, fallback) {
+      const x = Number(n);
+      if (!Number.isFinite(x)) return fallback;
+      return Math.max(min, Math.min(max, x));
+    }
+
+    function getSwitchProperty(name, defaultValue) {
+      const value = getIcueProperty(name);
+      if (value === undefined || value === null || value === "") return defaultValue;
+      return !(value === false || value === "false");
+    }
+
+    function normalizeColorValue(value) {
+      if (value === undefined || value === null) return "";
+      let normalized = String(value).trim();
+      if (!normalized) return "";
+      const first = normalized.charAt(0);
+      const last = normalized.charAt(normalized.length - 1);
+      if ((first === "\"" && last === "\"") || (first === "'" && last === "'")) {
+        normalized = normalized.slice(1, -1).trim();
+      }
+      return normalized;
+    }
+
+    function isSupportedColorValue(value) {
+      const normalized = normalizeColorValue(value);
+      return /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(normalized)
+        || /^rgba?\(/i.test(normalized);
+    }
+
+    function getColorProperty(name, fallback) {
+      const value = getIcueProperty(name);
+      return isSupportedColorValue(value) ? normalizeColorValue(value) : fallback;
+    }
+
+    function parseUserBound(value) {
+      if (value === undefined || value === null) return null;
+      const trimmed = String(value).trim();
+      if (trimmed === "") return null;
+      const n = Number(trimmed);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    // Type/kind/units-based default axis range, per product spec:
+    //  - temperature from a system component (cpu-temp/gpu-temp kind): 20-100
+    //  - temperature from an iCUE device (any other kind, e.g. coolant/pump probes): 20-60
+    //  - RPM values (fan or pump speed): 0-3000
+    //  - anything else: 0-100
+    function getDefaultAxisRange(type, kind, units) {
+      const t = String(type || "").toLowerCase();
+      const k = String(kind || "").toLowerCase();
+      const u = String(units || "").toLowerCase();
+
+      if (t === "temperature") {
+        if (k === "cpu-temp" || k === "gpu-temp") return { min: 20, max: 100 };
+        return { min: 20, max: 60 };
+      }
+      if (u.indexOf("rpm") !== -1) return { min: 0, max: 3000 };
+      return { min: 0, max: 100 };
+    }
+
+    function resolveAxisRange(slotKey, identity) {
+      const minProp = getIcueProperty("sensor" + slotKey + "AxisMin");
+      const maxProp = getIcueProperty("sensor" + slotKey + "AxisMax");
+      const history = slots[slotKey].history;
+      const fallback = getDefaultAxisRange(identity.type, identity.kind, history.units);
+
+      const userMin = parseUserBound(minProp);
+      const userMax = parseUserBound(maxProp);
+
+      let min = userMin !== null ? userMin : fallback.min;
+      let max = userMax !== null ? userMax : fallback.max;
+      if (min >= max) { min = fallback.min; max = fallback.max; }
+      return { min: min, max: max };
+    }
+
+    function getDecimalsForUnits(units) {
+      return /rpm/i.test(String(units || "")) ? 0 : 1;
+    }
+
+    function formatValue(v, units) {
+      const n = Number(v);
+      return Number.isFinite(n) ? n.toFixed(getDecimalsForUnits(units)) : String(v);
+    }
+
+    function formatRate(ratePerMin, units) {
+      if (ratePerMin === null || ratePerMin === undefined || !Number.isFinite(ratePerMin)) return "";
+      const sign = ratePerMin > 0 ? "+" : "";
+      return sign + ratePerMin.toFixed(getDecimalsForUnits(units)) + (units || "") + "/min";
+    }
+
+    function isGenericSensorLabel(value) {
+      return /^sensor\s+\d+$/i.test(String(value || "").trim());
+    }
+
+    function isSensorIdentityIncomplete(identity) {
+      if (!identity) return true;
+      const name = String(identity.name || "").trim();
+      const hasName = name !== "" && !isGenericSensorLabel(name);
+      const hasIconIdentity = String(identity.kind || "").trim() !== "" || String(identity.type || "").trim() !== "";
+      return !hasName || !hasIconIdentity;
+    }
+
+    function isSensorConnectedValue(value) {
+      return !(value === false || value === "false" || value === 0 || value === "0");
+    }
+
+    function isSensorUnavailable(value, units) {
+      return String(value) === "-1" && String(units) === "-1";
+    }
+
+    function setState(message) {
+      if (!message) {
+        elState.classList.add("hidden");
+        elState.textContent = "";
+        return;
+      }
+      elState.textContent = message;
+      elState.classList.remove("hidden");
+    }
+
+    function getChartWindowMs() {
+      const minutes = clampNumber(getIcueProperty("chartWindowMinutes") ?? 5, 1, 30, 5);
+      return Math.round(minutes * 60 * 1000);
+    }
+
+    function getStatsWindowMs() {
+      const minutes = clampNumber(getIcueProperty("statsWindowMinutes") ?? 5, 1, 30, 5);
+      return Math.round(minutes * 60 * 1000);
+    }
+
+    function getConfiguredSensorId(slotKey) {
+      if (slotKey === "B" && !getSwitchProperty("showSensorB", false)) return "";
+      if (slotKey === "C" && !getSwitchProperty("showSensorC", false)) return "";
+      const propertyName = slotKey === "A" ? "sensorA" : slotKey === "B" ? "sensorB" : "sensorC";
+      const value = getIcueProperty(propertyName);
+      return value ? String(value).trim() : "";
+    }
+
+    function getSensorCAxis() {
+      return getSwitchProperty("sensorCUseSecondaryAxis", false) ? "secondary" : "primary";
+    }
+
+    function buildStyleSignature() {
+      const bgMedia = normalizeMediaConfig(getIcueProperty("backgroundMedia"));
+      return [
+        getConfiguredSensorId("A"),
+        getIcueProperty("sensorAAxisMin") ?? "",
+        getIcueProperty("sensorAAxisMax") ?? "",
+        getColorProperty("sensorAColor", "#4DA3FF"),
+        getConfiguredSensorId("B"),
+        getIcueProperty("sensorBAxisMin") ?? "",
+        getIcueProperty("sensorBAxisMax") ?? "",
+        getColorProperty("sensorBColor", "#FF6B6B"),
+        getConfiguredSensorId("C"),
+        getSensorCAxis(),
+        getColorProperty("sensorCColor", "#FFD166"),
+        String(getChartWindowMs()),
+        String(getStatsWindowMs()),
+        getColorProperty("textColor", "#FFFFFF"),
+        getColorProperty("accentColor", "#76B900"),
+        normalizeColorValue(getIcueProperty("backgroundColor") || "#111111"),
+        String(clampNumber(getIcueProperty("transparency") ?? 100, 0, 100, 100)),
+        String(Number(getIcueProperty("glassBlur") ?? 0)),
+        String(Number(getIcueProperty("bgBrightness") ?? 100)),
+        bgMedia ? [bgMedia.pathToAsset, bgMedia.baseWidth, bgMedia.baseHeight, bgMedia.scale, bgMedia.positionX, bgMedia.positionY, bgMedia.angle].join("|") : ""
+      ].join("||");
+    }
+
+    function applyStyles() {
+      const root = document.documentElement;
+
+      const transparencyValue = clampNumber(getIcueProperty("transparency") ?? 100, 0, 100, 100);
+      root.style.setProperty("--bg-opacity", String(transparencyValue / 100));
+
+      const textColor = getColorProperty("textColor", "#FFFFFF");
+      const accentColor = getColorProperty("accentColor", "#76B900");
+      const bgColor = getIcueProperty("backgroundColor") || "#111111";
+      const sensorAColor = getColorProperty("sensorAColor", "#4DA3FF");
+      const sensorBColor = getColorProperty("sensorBColor", "#FF6B6B");
+      const sensorCColor = getColorProperty("sensorCColor", "#FFD166");
+      const showB = getSwitchProperty("showSensorB", false);
+
+      root.style.setProperty("--text-color", textColor);
+      root.style.setProperty("--accent-color", accentColor);
+      root.style.setProperty("--bg-color", bgColor);
+      root.style.setProperty("--sensor-a-color", sensorAColor);
+      root.style.setProperty("--sensor-b-color", sensorBColor);
+      root.style.setProperty("--sensor-c-color", sensorCColor);
+
+      el.A.swatch.style.background = sensorAColor;
+      el.A.line.setAttribute("stroke", sensorAColor);
+      el.A.avgLine.setAttribute("stroke", sensorAColor);
+      el.B.swatch.style.background = sensorBColor;
+      el.B.line.setAttribute("stroke", sensorBColor);
+      el.B.avgLine.setAttribute("stroke", sensorBColor);
+      el.C.swatch.style.background = sensorCColor;
+      el.C.line.setAttribute("stroke", sensorCColor);
+      el.C.avgLine.setAttribute("stroke", sensorCColor);
+
+      elLegend.classList.toggle("single-sensor", !showB);
+      elGraphPlot.classList.toggle("single-sensor", !showB);
+      elLegend.classList.toggle("has-c", getSwitchProperty("showSensorC", false));
+
+      const blur = Number(getIcueProperty("glassBlur") ?? 0);
+      const brightness = Number(getIcueProperty("bgBrightness") ?? 100);
+      root.style.setProperty("--bg-blur", (Number.isFinite(blur) ? blur : 0) + "px");
+      root.style.setProperty("--bg-brightness", (Number.isFinite(brightness) ? brightness : 100) + "%");
+
+      currentChartWindowMs = getChartWindowMs();
+      currentStatsWindowMs = getStatsWindowMs();
+      const retainMs = getMaxRetainMs();
+      slots.A.history.setRetainMs(retainMs);
+      slots.B.history.setRetainMs(retainMs);
+      slots.C.history.setRetainMs(retainMs);
+
+      const chartMinutes = Math.round(currentChartWindowMs / 60000);
+      const statsMinutes = Math.round(currentStatsWindowMs / 60000);
+      elWindowLabel.textContent = "Chart " + chartMinutes + " min · Stats " + statsMinutes + " min";
+
+      const bgMedia = normalizeMediaConfig(getIcueProperty("backgroundMedia"));
+      const mediaSignature = bgMedia ? [bgMedia.pathToAsset, bgMedia.baseWidth, bgMedia.baseHeight, bgMedia.scale, bgMedia.positionX, bgMedia.positionY, bgMedia.angle].join("|") : "";
+      if (!mediaSignature) {
+        if (lastMediaSignature) { mediaBackgroundComponent.clear(); lastMediaSignature = ""; }
+        return;
+      }
+      if (mediaSignature !== lastMediaSignature) {
+        mediaBackgroundComponent.loadMedia(bgMedia);
+        lastMediaSignature = mediaSignature;
+      }
+    }
+
+    // --- Sensor fetch pipeline (mirrors the proven sensor-bar/smart-sensors pattern) ---
+
+    function getSensorNamePromise(sensorId) { return sensorApi && sensorApi.getSensorName ? sensorApi.getSensorName(sensorId) : Promise.resolve(""); }
+    function getSensorDeviceNamePromise(sensorId) { return sensorApi && sensorApi.getSensorDeviceName ? sensorApi.getSensorDeviceName(sensorId) : Promise.resolve(""); }
+    function getSensorTypePromise(sensorId) { return sensorApi && sensorApi.getSensorType ? sensorApi.getSensorType(sensorId) : Promise.resolve(""); }
+    function getSensorKindPromise(sensorId) { return sensorApi && sensorApi.getSensorKind ? sensorApi.getSensorKind(sensorId) : Promise.resolve(""); }
+    function getSensorValuePromise(sensorId) { return sensorApi && sensorApi.getSensorValue ? sensorApi.getSensorValue(sensorId) : Promise.resolve(null); }
+    function getSensorUnitsPromise(sensorId) { return sensorApi && sensorApi.getSensorUnits ? sensorApi.getSensorUnits(sensorId) : Promise.resolve(""); }
+    function getSensorConnectedPromise(sensorId) { return sensorApi && sensorApi.sensorIsConnected ? sensorApi.sensorIsConnected(sensorId) : Promise.resolve(true); }
+
+    function requestUnitsRefresh(slotKey, sensorId, force) {
+      if (!sensorApi || !sensorId) return;
+      const key = slotKey + ":" + sensorId;
+      if (pendingUnitsRefresh[key]) return;
+      const now = Date.now();
+      if (!force && (now - (lastUnitsRefreshAt[key] || 0)) < 2000) return;
+      lastUnitsRefreshAt[key] = now;
+      pendingUnitsRefresh[key] = true;
+
+      getSensorUnitsPromise(sensorId).then(function(units) {
+        const normalized = units === undefined || units === null ? "" : String(units);
+        if (normalized && slots[slotKey].sensorId === sensorId) {
+          slots[slotKey].history.setUnits(normalized);
+          scheduleFrame();
+        }
+      }).catch(function() {}).finally(function() { delete pendingUnitsRefresh[key]; });
+    }
+
+    function requestIdentityRefresh(slotKey, sensorId, force) {
+      if (!sensorApi || !sensorId) return;
+      const key = slotKey + ":" + sensorId;
+      if (pendingIdentityRefresh[key]) return;
+      const now = Date.now();
+      if (!force && (now - (lastIdentityRefreshAt[key] || 0)) < 3000) return;
+      lastIdentityRefreshAt[key] = now;
+      pendingIdentityRefresh[key] = true;
+
+      setTimeout(function() {
+        Promise.resolve(fetchSensorSlot(slotKey, sensorId)).catch(function() {}).finally(function() {
+          delete pendingIdentityRefresh[key];
+        });
+      }, force ? 0 : 750);
+    }
+
+    async function fetchSensorSlot(slotKey, sensorId) {
+      const slot = slots[slotKey];
+      if (!sensorApi || !sensorId) {
+        slot.identity = getEmptyIdentity();
+        scheduleFrame();
+        return;
+      }
+
+      const previousIdentity = slot.identity || getEmptyIdentity();
+
+      try {
+        const connectedValue = await getSensorConnectedPromise(sensorId).catch(function() { return true; });
+        if (slot.sensorId !== sensorId) return;
+
+        if (!isSensorConnectedValue(connectedValue)) {
+          slot.identity = { type: previousIdentity.type, kind: previousIdentity.kind, name: previousIdentity.name, deviceName: previousIdentity.deviceName, connected: false };
+          requestIdentityRefresh(slotKey, sensorId, false);
+          scheduleFrame();
+          return;
+        }
+
+        const results = await Promise.allSettled([
+          getSensorTypePromise(sensorId), getSensorKindPromise(sensorId),
+          getSensorNamePromise(sensorId), getSensorDeviceNamePromise(sensorId),
+          getSensorValuePromise(sensorId), getSensorUnitsPromise(sensorId)
+        ]);
+
+        if (slot.sensorId !== sensorId) return;
+
+        function resolveResult(result, fallback, preserveEmpty) {
+          if (!result || result.status !== "fulfilled") return fallback;
+          const value = result.value;
+          if (preserveEmpty) return value === undefined || value === null ? fallback : value;
+          return value === undefined || value === null || value === "" ? fallback : value;
+        }
+
+        const nextValue = resolveResult(results[4], null, true);
+        const nextUnits = resolveResult(results[5], "", false);
+
+        if (isSensorUnavailable(nextValue, nextUnits)) {
+          slot.identity = { type: previousIdentity.type, kind: previousIdentity.kind, name: previousIdentity.name, deviceName: previousIdentity.deviceName, connected: false };
+          requestIdentityRefresh(slotKey, sensorId, false);
+          scheduleFrame();
+          return;
+        }
+
+        const previousName = String(previousIdentity.name || "").trim();
+        const resolvedName = resolveResult(results[2], previousIdentity.name, false);
+        const nextName = isGenericSensorLabel(resolvedName) && previousName && !isGenericSensorLabel(previousName) ? previousName : resolvedName;
+
+        slot.identity = {
+          type: resolveResult(results[0], previousIdentity.type, false),
+          kind: resolveResult(results[1], previousIdentity.kind, false),
+          name: nextName,
+          deviceName: resolveResult(results[3], previousIdentity.deviceName, false),
+          connected: true
+        };
+
+        if (nextValue !== null && nextValue !== undefined && nextValue !== "") {
+          slot.history.recordRaw(nextValue, Date.now());
+        }
+        if (nextUnits) slot.history.setUnits(nextUnits);
+        else if (!slot.history.units) requestUnitsRefresh(slotKey, sensorId, false);
+
+        if (isSensorIdentityIncomplete(slot.identity)) requestIdentityRefresh(slotKey, sensorId, false);
+      } catch (e) {
+        if (slot.sensorId !== sensorId) return;
+        slot.identity = previousIdentity;
+        requestIdentityRefresh(slotKey, sensorId, false);
+      }
+
+      scheduleFrame();
+    }
+
+    function syncSlot(slotKey) {
+      const nextId = getConfiguredSensorId(slotKey);
+      const slot = slots[slotKey];
+      if (nextId === slot.sensorId) return false;
+
+      slot.sensorId = nextId;
+      slot.identity = getEmptyIdentity();
+      slot.history = createHistory();
+
+      if (nextId) fetchSensorSlot(slotKey, nextId);
+      return true;
+    }
+
+    // --- Sensor plugin ---
+
+    function onSensorPluginReady() {
+      if (pluginReady) return;
+      pluginReady = true;
+
+      if (typeof SimpleSensorApiWrapper === "function" && window.plugins && window.plugins.Sensorsdataprovider) {
+        sensorApi = new SimpleSensorApiWrapper(window.plugins.Sensorsdataprovider);
+      }
+
+      if (window.plugins && window.plugins.Sensorsdataprovider) {
+        try {
+          window.plugins.Sensorsdataprovider.sensorValueChanged.connect(function(sensorId, value) {
+            let matched = false;
+            ["A", "B", "C"].forEach(function(slotKey) {
+              const slot = slots[slotKey];
+              if (slot.sensorId !== sensorId) return;
+              matched = true;
+              slot.identity.connected = true;
+              slot.history.recordRaw(value, Date.now());
+              if (!slot.history.units) requestUnitsRefresh(slotKey, sensorId, false);
+              if (isSensorIdentityIncomplete(slot.identity)) requestIdentityRefresh(slotKey, sensorId, false);
+            });
+            if (matched) scheduleFrame();
+          });
+
+          window.plugins.Sensorsdataprovider.sensorUnitsChanged.connect(function(sensorId, units) {
+            let matched = false;
+            ["A", "B", "C"].forEach(function(slotKey) {
+              if (slots[slotKey].sensorId === sensorId) { slots[slotKey].history.setUnits(units); matched = true; }
+            });
+            if (matched) scheduleFrame();
+          });
+
+          if (window.plugins.Sensorsdataprovider.sensorDataChanged) {
+            window.plugins.Sensorsdataprovider.sensorDataChanged.connect(function(sensorId) {
+              ["A", "B", "C"].forEach(function(slotKey) {
+                if (slots[slotKey].sensorId === sensorId) fetchSensorSlot(slotKey, sensorId);
+              });
+            });
+          }
+
+          if (window.plugins.Sensorsdataprovider.sensorAdded) {
+            window.plugins.Sensorsdataprovider.sensorAdded.connect(function(sensorId) {
+              ["A", "B", "C"].forEach(function(slotKey) {
+                if (slots[slotKey].sensorId === sensorId) fetchSensorSlot(slotKey, sensorId);
+              });
+            });
+          }
+
+          if (window.plugins.Sensorsdataprovider.sensorRemoved) {
+            window.plugins.Sensorsdataprovider.sensorRemoved.connect(function(sensorId) {
+              let matched = false;
+              ["A", "B", "C"].forEach(function(slotKey) {
+                if (slots[slotKey].sensorId === sensorId) { slots[slotKey].identity.connected = false; matched = true; }
+              });
+              if (matched) scheduleFrame();
+            });
+          }
+        } catch (e) {
+          console.warn("Could not connect sensor signals:", e);
+        }
+      }
+
+      syncSlot("A");
+      syncSlot("B");
+      syncSlot("C");
+      scheduleFrame();
+    }
+
+    if (typeof pluginSensorsdataprovider_initialized !== "undefined" && pluginSensorsdataprovider_initialized) {
+      onSensorPluginReady();
+    }
+
+    // --- Render ---
+
+    function clearSlotLegend(slotKey) {
+      const e = el[slotKey];
+      e.value.firstChild.textContent = VALUE_PLACEHOLDER;
+      e.unit.textContent = "";
+      e.max.textContent = "";
+      e.min.textContent = "";
+      e.avg.textContent = "";
+      e.rate.textContent = "";
+      e.trend.textContent = "";
+    }
+
+    function renderSlotLegend(slotKey, connected, identity, stats, trendInfo, units) {
+      const e = el[slotKey];
+      e.legendItem.dataset.connected = connected ? "true" : "false";
+
+      const labelOverride = String(getIcueProperty("sensor" + slotKey + "Label") || "").trim();
+      const name = String(identity.name || "").trim();
+      const fallbackName = slotKey === "A" ? "Sensor A" : slotKey === "B" ? "Sensor B" : "Sensor C";
+      e.name.textContent = labelOverride || ((name && !isGenericSensorLabel(name)) ? name : fallbackName);
+
+      if (!connected || !stats || stats.current === null) {
+        clearSlotLegend(slotKey);
+        return;
+      }
+
+      e.value.firstChild.textContent = formatValue(stats.current, units);
+      e.unit.textContent = units || "";
+      e.max.textContent = "Max " + formatValue(stats.max, units);
+      e.min.textContent = "Min " + formatValue(stats.min, units);
+      e.avg.textContent = "Avg " + formatValue(stats.avg, units);
+      e.rate.textContent = formatRate(trendInfo.ratePerMin, units);
+
+      const trendGlyph = TREND_GLYPH[trendInfo.trend] || TREND_GLYPH.stable;
+      e.trend.textContent = trendGlyph;
+      e.trend.style.color = TREND_COLOR[trendInfo.trend] || TREND_COLOR.stable;
+    }
+
+    // Sensor C has no axis of its own - it plots on whichever existing axis
+    // (Primary/A or Secondary/B) the user assigns it to, sharing that axis's
+    // resolved range so both lines stay comparable on the same scale. If the
+    // host axis's own sensor isn't configured, fall back to Sensor C's own
+    // identity so a sensible default range (e.g. temperature vs. RPM) still
+    // applies.
+    function resolveSharedAxisRange(axisSlotKey, fallbackIdentity) {
+      const slot = slots[axisSlotKey];
+      const identity = slot.sensorId ? (slot.identity || getEmptyIdentity()) : (fallbackIdentity || getEmptyIdentity());
+      return resolveAxisRange(axisSlotKey, identity);
+    }
+
+    function renderChart() {
+      const hasA = !!slots.A.sensorId;
+      const showB = getSwitchProperty("showSensorB", false);
+      const hasB = showB && !!slots.B.sensorId;
+      const showC = getSwitchProperty("showSensorC", false);
+      const hasC = showC && !!slots.C.sensorId;
+
+      if (!hasA && !hasB && !hasC) {
+        setState("Select a sensor in the widget settings.");
+        return;
+      }
+      if (!pluginReady) {
+        setState("Loading sensors…");
+        return;
+      }
+      setState("");
+
+      const now = Date.now();
+      const cAxis = getSensorCAxis();
+      const ranges = {};
+
+      ["A", "B"].forEach(function(slotKey) {
+        const active = slotKey === "A" ? hasA : hasB;
+        const slot = slots[slotKey];
+        const e = el[slotKey];
+
+        if (!active) {
+          e.line.setAttribute("points", "");
+          e.avgLine.setAttribute("points", "");
+          e.axisMax.textContent = "";
+          e.axisMin.textContent = "";
+          renderSlotLegend(slotKey, false, getEmptyIdentity(), null, { trend: "stable", ratePerMin: null }, "");
+          return;
+        }
+
+        const identity = slot.identity || getEmptyIdentity();
+        const connected = identity.connected !== false;
+        const stats = slot.history.getStats(now, currentStatsWindowMs);
+        const trendInfo = connected ? slot.history.computeTrend(now) : { trend: "stable", ratePerMin: null };
+
+        renderSlotLegend(slotKey, connected, identity, stats, trendInfo, slot.history.units);
+
+        if (!connected || !stats || stats.current === null) {
+          e.line.setAttribute("points", "");
+          e.avgLine.setAttribute("points", "");
+          e.axisMax.textContent = "";
+          e.axisMin.textContent = "";
+          return;
+        }
+
+        const range = resolveAxisRange(slotKey, identity);
+        ranges[slotKey] = range;
+        e.axisMax.textContent = formatValue(range.max, slot.history.units);
+        e.axisMin.textContent = formatValue(range.min, slot.history.units);
+
+        const points = slot.history.getPointsForRange(now, currentChartWindowMs, range.min, range.max, CHART_W, CHART_H);
+        e.line.setAttribute("points", points || "");
+
+        if (stats.avg !== null && stats.avg !== undefined) {
+          const y = slot.history.valueToY(stats.avg, range.min, range.max, CHART_H);
+          e.avgLine.setAttribute("points", "0," + y.toFixed(1) + " " + CHART_W + "," + y.toFixed(1));
+        } else {
+          e.avgLine.setAttribute("points", "");
+        }
+      });
+
+      elLegendC.classList.toggle("hidden", !hasC);
+      if (!hasC) {
+        el.C.line.setAttribute("points", "");
+        el.C.avgLine.setAttribute("points", "");
+        renderSlotLegend("C", false, getEmptyIdentity(), null, { trend: "stable", ratePerMin: null }, "");
+        return;
+      }
+
+      const slotC = slots.C;
+      const identityC = slotC.identity || getEmptyIdentity();
+      const connectedC = identityC.connected !== false;
+      const statsC = slotC.history.getStats(now, currentStatsWindowMs);
+      const trendInfoC = connectedC ? slotC.history.computeTrend(now) : { trend: "stable", ratePerMin: null };
+
+      renderSlotLegend("C", connectedC, identityC, statsC, trendInfoC, slotC.history.units);
+
+      if (!connectedC || !statsC || statsC.current === null) {
+        el.C.line.setAttribute("points", "");
+        el.C.avgLine.setAttribute("points", "");
+        return;
+      }
+
+      const axisSlotKey = cAxis === "secondary" ? "B" : "A";
+      const range = ranges[axisSlotKey] || resolveSharedAxisRange(axisSlotKey, identityC);
+
+      const points = slotC.history.getPointsForRange(now, currentChartWindowMs, range.min, range.max, CHART_W, CHART_H);
+      el.C.line.setAttribute("points", points || "");
+
+      if (statsC.avg !== null && statsC.avg !== undefined) {
+        const y = slotC.history.valueToY(statsC.avg, range.min, range.max, CHART_H);
+        el.C.avgLine.setAttribute("points", "0," + y.toFixed(1) + " " + CHART_W + "," + y.toFixed(1));
+      } else {
+        el.C.avgLine.setAttribute("points", "");
+      }
+    }
+
+    function scheduleFrame() {
+      if (!pendingFrame) pendingFrame = requestAnimationFrame(commitFrame);
+    }
+
+    function commitFrame() {
+      pendingFrame = null;
+      if (pendingStyleRefresh) {
+        applyStyles();
+        pendingStyleRefresh = false;
+      }
+      renderChart();
+    }
+
+    function onIcueDataUpdated() {
+      const nextStyleSignature = buildStyleSignature();
+      if (nextStyleSignature !== lastStyleSignature) {
+        pendingStyleRefresh = true;
+        lastStyleSignature = nextStyleSignature;
+      }
+
+      if (pluginReady) {
+        syncSlot("A");
+        syncSlot("B");
+        syncSlot("C");
+      }
+      scheduleFrame();
+    }
+
+    function onIcueInitialized() {
+      onIcueDataUpdated();
+    }
+
+    // Continuous repaint so the chart keeps sliding and the avg line stays
+    // current even between iCUE's onDataUpdated ticks.
+    setInterval(function() { scheduleFrame(); }, 1000);
+
+    if (typeof iCUE_initialized !== "undefined" && iCUE_initialized) {
+      onIcueInitialized();
+    } else {
+      onIcueDataUpdated();
+    }
+  </script>
+</body>
+</html>
