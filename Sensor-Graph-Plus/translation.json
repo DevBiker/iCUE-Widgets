@@ -1,0 +1,37 @@
+{
+  "en": {
+    "translation": {
+      "Sensor Graph Plus": "Sensor Graph Plus",
+      "Widget Setup": "Widget Setup",
+      "Sensor A": "Primary Sensor",
+      "Sensor A Label": "Primary Sensor Label",
+      "Sensor A Min": "Primary Sensor Min",
+      "Sensor A Max": "Primary Sensor Max",
+      "Sensor A Color": "Primary Sensor Color",
+      "Show Sensor B": "Show Secondary Sensor",
+      "Sensor B": "Secondary Sensor",
+      "Sensor B Label": "Secondary Sensor Label",
+      "Sensor B Min": "Secondary Sensor Min",
+      "Sensor B Max": "Secondary Sensor Max",
+      "Sensor B Color": "Secondary Sensor Color",
+      "Show Sensor C": "Show Additional Sensor",
+      "Sensor C": "Additional Sensor",
+      "Sensor C Label": "Additional Sensor Label",
+      "Sensor C on Secondary Axis": "Additional Sensor on Secondary Axis",
+      "Sensor C Color": "Additional Sensor Color",
+      "Chart Window": "Chart Window",
+      "Statistics Window": "Statistics Window",
+      "Widget Personalization": "Widget Personalization",
+      "Text Color": "Text Color",
+      "Accent Color": "Accent Color",
+      "Background Color": "Background Color",
+      "Background Image": "Background Image",
+      "Background Brightness": "Background Brightness",
+      "Glass Blur": "Glass Blur",
+      "Background Transparency": "Background Transparency",
+      "Loading sensors…": "Loading sensors…",
+      "Select a sensor in the widget settings.": "Select a sensor in the widget settings.",
+      "Sensor unavailable": "Sensor unavailable"
+    }
+  }
+}
